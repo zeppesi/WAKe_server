@@ -1,10 +1,11 @@
 from django.db.models import Q
-from rest_framework.generics import ListAPIView, GenericAPIView
+from rest_framework.generics import ListAPIView, GenericAPIView, CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from records.models import Record, Content
-from records.serializer import RecordSerializer, ContentSerializer
+from records.serializer import RecordSerializer, ContentSerializer, RecordCreateSerializer
+from users.models import Profile
 
 
 class RandomContentAPIView(GenericAPIView):
@@ -26,6 +27,30 @@ class RandomContentAPIView(GenericAPIView):
 
         serializer = self.get_serializer(queryset)
         return Response(serializer.data)
+
+
+class RecordCreateAPIView(CreateAPIView):
+    serializer_class = RecordCreateSerializer
+
+    def post(self, request: Request, *args, **kwargs):
+        serializer: RecordCreateSerializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        username = serializer.validated_data.get('username')
+        content_id = serializer.validated_data.get('content_id')
+        text = serializer.validated_data.get('text')
+
+        profile = Profile.objects.get(name=username)
+
+        record = Record.objects.create(
+            content_id=content_id,
+            profile=profile,
+            text=text
+        )
+
+        record_serializer = RecordSerializer(record)
+
+        return Response(record_serializer.data)
 
 
 class RecordListAPIView(ListAPIView):
