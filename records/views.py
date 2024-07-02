@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, GenericAPIView
 
 from records.models import Record
 from records.serializer import RecordSerializer
@@ -17,7 +17,7 @@ class RecordListAPIView(ListAPIView):
     def get_queryset(self):
         username_filter = self.get_username_filter()
 
-        records = Record.objects.filter(
+        queryset = Record.objects.filter(
             username_filter
         ).select_related(
             'content'
@@ -25,4 +25,4 @@ class RecordListAPIView(ListAPIView):
             '-created_at'
         )
 
-        return records
+        return queryset
