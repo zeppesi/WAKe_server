@@ -1,10 +1,11 @@
 from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import ListAPIView, GenericAPIView, CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from records.models import Record, Content
-from records.serializer import RecordSerializer, ContentSerializer, RecordCreateSerializer
+from records.serializer import RecordSerializer, ContentSerializer, RecordCreateSerializer, RecordListQuerySerializer
 from users.models import Profile
 
 
@@ -74,3 +75,7 @@ class RecordListAPIView(ListAPIView):
         )
 
         return queryset
+
+    @swagger_auto_schema(query_serializer=RecordListQuerySerializer)
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
