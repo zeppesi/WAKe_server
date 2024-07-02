@@ -1,14 +1,13 @@
-from django.urls import path, include
+from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from records.views import RecordListAPIView
+from records.views import RecordListAPIView, RandomContentAPIView
 
 app_name = 'records'
 
 router = SimpleRouter()
-# router.register('', RecordViewSet, 'records')
 
 urlpatterns = [
-    # path('', include((router.urls, 'records'))),
     path("records/", RecordListAPIView.as_view(), name="record_list"),
+    path("contents/random/", RandomContentAPIView.as_view(), name="random_content"),
 ]
