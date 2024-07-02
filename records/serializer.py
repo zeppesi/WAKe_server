@@ -23,5 +23,14 @@ class RecordCreateSerializer(serializers.Serializer):
     text = serializers.CharField(max_length=100, allow_blank=True, allow_null=True)
 
 
+"""
+    Swagger Query param serializers
+"""
+
+
+class RandomContentQuerySerializer(serializers.Serializer):
+    prev = serializers.IntegerField(required=False)
+
+
 class RecordListQuerySerializer(serializers.Serializer):
     username = serializers.CharField(max_length=20, required=False)

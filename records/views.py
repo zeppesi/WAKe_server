@@ -5,7 +5,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from records.models import Record, Content
-from records.serializer import RecordSerializer, ContentSerializer, RecordCreateSerializer, RecordListQuerySerializer
+from records.serializer import RecordSerializer, ContentSerializer, RecordCreateSerializer, RecordListQuerySerializer, \
+    RandomContentQuerySerializer
 from users.models import Profile
 
 
@@ -18,6 +19,7 @@ class RandomContentAPIView(GenericAPIView):
             return Q()
         return ~Q(id=int(prev))
 
+    @swagger_auto_schema(query_serializer=RandomContentQuerySerializer)
     def get(self, request: Request):
         prev_filter = self.get_prev_filter()
         queryset = Content.objects.filter(
