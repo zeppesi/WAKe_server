@@ -29,7 +29,7 @@ class RecordCreateSerializer(serializers.Serializer):
 
 
 class RandomContentQuerySerializer(serializers.Serializer):
-    prev = serializers.IntegerField(required=False)
+    prev = serializers.IntegerField(required=False, help_text='이전 content id')
 
 
 class RecordListQuerySerializer(serializers.Serializer):
