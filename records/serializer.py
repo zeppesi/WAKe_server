@@ -1,6 +1,9 @@
+import datetime
+
 from rest_framework import serializers
 
 from records.models import Record, Content
+from utils.time import KST
 
 
 class ContentSerializer(serializers.ModelSerializer):
@@ -15,6 +18,11 @@ class RecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Record
         fields = ('id', 'text', 'created_at', 'updated_at', 'content',)
+
+
+class RecordListSerializer(serializers.Serializer):
+    date = serializers.CharField()
+    records = RecordSerializer(many=True)
 
 
 class RecordCreateSerializer(serializers.Serializer):
