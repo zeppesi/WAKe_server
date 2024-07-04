@@ -4,6 +4,8 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
+    env_file:
+      - .env
   nginx:
     ports:
       - 80:80
