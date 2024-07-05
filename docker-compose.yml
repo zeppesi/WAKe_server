@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       context: .
     env_file:
-      - WAKe_server/.env
+      - .env
   nginx:
     ports:
       - 80:80
