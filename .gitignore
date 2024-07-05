@@ -166,4 +166,4 @@ cython_debug/
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
-*/secrets.json
+WAKe_server/settings/secrets.json
