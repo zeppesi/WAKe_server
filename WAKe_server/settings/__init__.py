@@ -4,7 +4,7 @@ ENV_SETTINGS_MODE = os.environ.get('ENV_SETTINGS_MODE')
 
 if ENV_SETTINGS_MODE is None:
     ENV_MODE = 'local'
-elif 'devel' in ENV_SETTINGS_MODE:
+elif 'dev' in ENV_SETTINGS_MODE:
     ENV_MODE = 'dev'
 else:
     ENV_MODE = 'local'
