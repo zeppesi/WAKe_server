@@ -1,5 +1,5 @@
 from WAKe_server.settings.base import *
-from WAKe_server.settings import get_secrets
+from WAKe_server.settings.secrets import get_secrets
 
 DEBUG = True
 
