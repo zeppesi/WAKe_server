@@ -6,7 +6,7 @@ DEBUG = True
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "wake",
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
