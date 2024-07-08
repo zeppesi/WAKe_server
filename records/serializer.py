@@ -42,3 +42,4 @@ class RandomContentQuerySerializer(serializers.Serializer):
 
 class RecordListQuerySerializer(serializers.Serializer):
     username = serializers.CharField(max_length=20, required=False)
+    target_date = serializers.CharField(help_text='YYYY-mm-dd', required=False)
