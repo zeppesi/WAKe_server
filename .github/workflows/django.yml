@@ -26,10 +26,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Setting Secrets
-      run: |
-        echo DEV >> /home/runner/work/WAKe_server/WAKe_server/WAKe_server/settings/secrets.json
       env:
-        ENV_SETTINGS_MODE: git
+        ENV_SETTINGS_MODE: git  ${{ secrets.REACT_APP_DEBUG }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_S3_CUSTOM_DOMAIN: ${{ secrets.AWS_S3_CUSTOM_DOMAIN }}
+      run: |
+        echo ${{ ENV_SETTINGS_MODE }}
+        echo ${{ AWS_ACCESS_KEY_ID }}
+        echo ${{ AWS_SECRET_ACCESS_KEY }}
+        echo ${{ AWS_STORAGE_BUCKET_NAME }}
+        echo ${{ AWS_REGION }}
+        echo ${{ AWS_S3_CUSTOM_DOMAIN }}
     - name: Run Tests
       run: |
         python manage.py test
