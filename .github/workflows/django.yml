@@ -13,7 +13,6 @@ jobs:
       - name: Access Secrets
         run: |
           echo "Secret Token : ${{ secrets.ENV_SETTINGS_MODE_GIT }}"
-  출처: https://kotlinworld.com/401 [조세영의 Kotlin World:티스토리]
   build:
 
     runs-on: ubuntu-latest
