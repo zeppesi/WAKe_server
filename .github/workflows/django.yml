@@ -27,7 +27,7 @@ jobs:
         pip install -r requirements.txt
     - name: Setting Secrets
       run: |
-        echo DEV >> secrets.json
+        echo DEV >> /home/runner/work/WAKe_server/WAKe_server/WAKe_server/settings/secrets.json
       env:
         ENV_SETTINGS_MODE: git
     - name: Run Tests
