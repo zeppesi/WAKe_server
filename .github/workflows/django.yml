@@ -40,12 +40,12 @@ jobs:
         AWS_REGION: ${{ secrets.AWS_REGION }}
         AWS_S3_CUSTOM_DOMAIN: ${{ secrets.AWS_S3_CUSTOM_DOMAIN }}
       run: |
-        echo ${{ ENV_SETTINGS_MODE }}
-        echo ${{ AWS_ACCESS_KEY_ID }}
-        echo ${{ AWS_SECRET_ACCESS_KEY }}
-        echo ${{ AWS_STORAGE_BUCKET_NAME }}
-        echo ${{ AWS_REGION }}
-        echo ${{ AWS_S3_CUSTOM_DOMAIN }}
+        echo "${{ ENV_SETTINGS_MODE }}"
+        echo "${{ AWS_ACCESS_KEY_ID }}"
+        echo "${{ AWS_SECRET_ACCESS_KEY }}"
+        echo "${{ AWS_STORAGE_BUCKET_NAME }}"
+        echo "${{ AWS_REGION }}"
+        echo "${{ AWS_S3_CUSTOM_DOMAIN }}"
     - name: Run Tests
       run: |
         python manage.py test
