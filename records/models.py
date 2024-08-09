@@ -11,7 +11,7 @@ class Content(models.Model):
 
 
 class Record(models.Model):
-    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey('accounts.CommonProfile', on_delete=models.CASCADE)
     content = models.ForeignKey(Content, on_delete=models.CASCADE)
 
     text = models.CharField(max_length=100, blank=True, null=True)

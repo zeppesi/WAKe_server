@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -47,7 +48,7 @@ THIRD_PARTY_APPS = [
 ]
 
 PROJECT_APPS = [
-    "users",
+    "accounts",
     "records",
 ]
 
@@ -134,3 +135,40 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGIN_REDIRECT_URL = 'main'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'index'
 ACCOUNT_LOGOUT_ON_GET = True
+
+AUTH_USER_MODEL = 'accounts.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+REST_USE_JWT = True
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+# jwt 토큰은 simplejwt의 JWTAuthentication으로 인증한다.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',  # 누구나 접근
+    ),
+}
+
+# 추가적인 JWT 설정
+SIMPLE_JWT = {
+    # 'ACCESS_TOKEN_LIFETIME': timedelta(seconds=150),
+    # 'REFRESH_TOKEN_LIFETIME': timedelta(seconds=300),
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=28),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=28),
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    # 'ROTATE_REFRESH_TOKENS': False,
+    # 'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': True,
+    'USER_ID_FIELD': 'email',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.SlidingToken',)
+}
