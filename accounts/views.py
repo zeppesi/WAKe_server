@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import SlidingToken
 
-from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET
+from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI
 from accounts.models import User, CommonProfile
 
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
@@ -26,7 +26,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
         data = {
             "grant_type": "authorization_code",
             "client_id": KAKAO_REST_API_KEY,
-            "redirect_uri": "http://127.0.0.1:8000/api/accounts/kakao/callback/",
+            "redirect_uri": KAKAO_CALLBACK_URI,
             "code": code,
             "client_secret": KAKAO_CLIENT_SECRET
         }
