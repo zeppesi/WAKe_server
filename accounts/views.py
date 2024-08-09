@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import SlidingToken
 
 from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET
-from accounts.models import User
+from accounts.models import User, CommonProfile
 
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
 KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
@@ -64,6 +64,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
                 # 비밀번호를 입력해서 로그인하는 부분은 없으므로 안전함
             }
             user = User.objects.create_user(email, password)  # todo: Profile은 나중에 create
+            profile = CommonProfile.objects.create(user=user, name=email)
 
             # 2-1. 회원가입 하고 토큰 만들어서 쿠키에 저장하기
             try:
