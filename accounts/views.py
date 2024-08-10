@@ -29,7 +29,7 @@ class UserViewSet(viewsets.GenericViewSet):
         return Response(dict(message='logout succeeded'))
 
 
-class KaKaoLoginViewSet(viewsets.Gen리ericViewSet):
+class KaKaoLoginViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['GET'])
     def callback(self, request: Request):
         code = request.GET["code"]
