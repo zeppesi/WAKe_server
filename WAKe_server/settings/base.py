@@ -163,13 +163,9 @@ REST_FRAMEWORK = {
 
 # 추가적인 JWT 설정
 SIMPLE_JWT = {
-    # 'ACCESS_TOKEN_LIFETIME': timedelta(seconds=150),
-    # 'REFRESH_TOKEN_LIFETIME': timedelta(seconds=300),
     'SLIDING_TOKEN_LIFETIME': timedelta(days=28),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=28),
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    # 'ROTATE_REFRESH_TOKENS': False,
-    # 'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': True,
     'USER_ID_FIELD': 'email',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.SlidingToken',)
