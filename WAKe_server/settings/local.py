@@ -4,13 +4,9 @@ from WAKe_server.settings.secrets import get_secrets
 DEBUG = True
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': get_secrets('DATABASE_NAME'),
-        'USER': get_secrets('DATABASE_USER'),
-        'PASSWORD': get_secrets('DATABASE_PASSWORD'),
-        'HOST': get_secrets('DATABASE_HOST'),
-        'PORT': get_secrets('DATABASE_PORT'),
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
