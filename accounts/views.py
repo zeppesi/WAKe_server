@@ -11,13 +11,25 @@ from rest_framework_simplejwt.tokens import SlidingToken
 
 from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI
 from accounts.models import User, CommonProfile
+from accounts.serializers import UserSerializer, LogoutSerializer
 from accounts.utils import token_serializer
 
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
 KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
 
 
-class KaKaoLoginViewSet(viewsets.GenericViewSet):
+class UserViewSet(viewsets.GenericViewSet):
+    serializer_class = UserSerializer
+
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated], serializer_class=LogoutSerializer)
+    def logout(self, request: Request):
+        token_str = request.META.get('HTTP_AUTHORIZATION', '').split()[1]
+        token = SlidingToken(token_str)
+        token.blacklist()
+        return Response(dict(message='logout succeeded'))
+
+
+class KaKaoLoginViewSet(viewsets.Gen리ericViewSet):
     @action(detail=False, methods=['GET'])
     def callback(self, request: Request):
         code = request.GET["code"]
