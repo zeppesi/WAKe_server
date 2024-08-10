@@ -11,3 +11,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 class LogoutSerializer(serializers.Serializer):
     pass
+
+class KakaoCallbackSerializer(serializers.Serializer):
+    pass

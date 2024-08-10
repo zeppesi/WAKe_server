@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import SlidingToken
 
 from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI
 from accounts.models import User, CommonProfile
-from accounts.serializers import UserSerializer, LogoutSerializer
+from accounts.serializers import UserSerializer, LogoutSerializer, KakaoCallbackSerializer
 from accounts.utils import token_serializer
 
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
@@ -30,7 +30,8 @@ class UserViewSet(viewsets.GenericViewSet):
 
 
 class KaKaoLoginViewSet(viewsets.GenericViewSet):
-    @action(detail=False, methods=['GET'])
+
+    @action(detail=False, methods=['GET'], serializer_class=KakaoCallbackSerializer)
     def callback(self, request: Request):
         code = request.GET["code"]
 
