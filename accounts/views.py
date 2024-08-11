@@ -2,6 +2,7 @@ import datetime
 import random
 
 import requests
+from django.shortcuts import redirect
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -64,7 +65,12 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             # a. 있으면 토큰 발행
             user = User.objects.get(email=email)
             token = token_serializer(user)
-            return Response(dict(token=token))
+            access_token = token['access']
+            refresh_token = token['refresh']
+            res = redirect('https://wake.zps.kr/')
+            res.set_cookie('access', access_token)
+            res.set_cookie('refresh', refresh_token)
+            return res
 
         except User.DoesNotExist:
             # b. 없으면 유저 및 프로필 생성
@@ -76,6 +82,11 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             try:
                 user = User.objects.get(email=email)
                 token = token_serializer(user)
-                return Response(dict(token=token))
+                access_token = token['access']
+                refresh_token = token['refresh']
+                res = redirect('https://wake.zps.kr/')
+                res.set_cookie('access', access_token)
+                res.set_cookie('refresh', refresh_token)
+                return res
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
