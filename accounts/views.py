@@ -67,9 +67,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             token = token_serializer(user)
             access_token = token['access']
             refresh_token = token['refresh']
-            res = redirect(LOGIN_REDIRECT_URL)
-            res.set_cookie('access', access_token)
-            res.set_cookie('refresh', refresh_token)
+            res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
             return res
 
         except User.DoesNotExist:
@@ -84,9 +82,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
                 token = token_serializer(user)
                 access_token = token['access']
                 refresh_token = token['refresh']
-                res = redirect(LOGIN_REDIRECT_URL)
-                res.set_cookie('access', access_token)
-                res.set_cookie('refresh', refresh_token)
+                res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
                 return res
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
