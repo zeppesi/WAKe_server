@@ -10,7 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import SlidingToken
 
-from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI
+from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI, LOGIN_REDIRECT_URL
 from accounts.models import User, CommonProfile
 from accounts.serializers import UserSerializer, LogoutSerializer, KakaoCallbackSerializer
 from accounts.utils import token_serializer
@@ -67,7 +67,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             token = token_serializer(user)
             access_token = token['access']
             refresh_token = token['refresh']
-            res = redirect('https://wake.zps.kr/')
+            res = redirect(LOGIN_REDIRECT_URL)
             res.set_cookie('access', access_token)
             res.set_cookie('refresh', refresh_token)
             return res
@@ -84,7 +84,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
                 token = token_serializer(user)
                 access_token = token['access']
                 refresh_token = token['refresh']
-                res = redirect('https://wake.zps.kr/')
+                res = redirect(LOGIN_REDIRECT_URL)
                 res.set_cookie('access', access_token)
                 res.set_cookie('refresh', refresh_token)
                 return res
