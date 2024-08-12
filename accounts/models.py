@@ -41,6 +41,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+
+    is_ghost = models.BooleanField(default=False)  # True인 경우 다시 authenticate 불가능 + 회원가입 시 해당 인스턴스 삭제
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
