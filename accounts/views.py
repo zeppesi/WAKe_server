@@ -32,6 +32,12 @@ class UserViewSet(viewsets.GenericViewSet):
 
 class KaKaoLoginViewSet(viewsets.GenericViewSet):
 
+    @action(detail=False, methods=['GET'])
+    def getcode(self, request: Request):
+        kakao_api = "https://kauth.kakao.com/oauth/authorize?response_type=code"
+
+        return redirect(f"{kakao_api}&client_id={KAKAO_REST_API_KEY}&redirect_uri={KAKAO_CALLBACK_URI}")
+
     @action(detail=False, methods=['GET'], serializer_class=KakaoCallbackSerializer)
     def callback(self, request: Request):
         code = request.GET["code"]
