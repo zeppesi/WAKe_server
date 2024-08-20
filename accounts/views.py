@@ -10,7 +10,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import SlidingToken
 
-from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI, LOGIN_REDIRECT_URL
+from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI, LOGIN_REDIRECT_URL, \
+    KAKAO_ADMIN_KEY
 from accounts.models import User, CommonProfile
 from accounts.serializers import UserSerializer, LogoutSerializer, KakaoCallbackSerializer
 from accounts.utils import token_serializer
@@ -27,6 +28,33 @@ class UserViewSet(viewsets.GenericViewSet):
         token_str = request.META.get('HTTP_AUTHORIZATION', '').split()[1]
         token = SlidingToken(token_str)
         token.blacklist()
+        return Response(dict(message='logout succeeded'))
+
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated], serializer_class=LogoutSerializer)
+    def resign(self, request: Request):
+        user = request.user
+
+        # todo: 일단 kakao만 구현했으므로
+        kakao_uid = user.socialaccount_set.filter(provider='kakao').first().uid
+
+        requests.post(
+            url="https://kapi.kakao.com/v1/user/unlink",
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"KakaoAK {KAKAO_ADMIN_KEY}",
+            },
+            data={
+                "target_id_type": "user_id",
+                "target_id": int(kakao_uid)
+            }
+        )
+        user.socialaccount_set.all().delete()
+
+
+        token_str = request.META.get('HTTP_AUTHORIZATION', '').split()[1]
+        token = SlidingToken(token_str)
+        token.blacklist()
+
         return Response(dict(message='logout succeeded'))
 
 
