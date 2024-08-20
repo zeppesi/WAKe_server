@@ -27,6 +27,13 @@ KAKAO_CALLBACK_URI = get_secrets('KAKAO_CALLBACK_URI')
 LOGIN_REDIRECT_URL = get_secrets('LOGIN_REDIRECT_URL')
 
 SOCIALACCOUNT_PROVIDERS = {
+    "kakao": {
+        "APP": {
+            "client_id": get_secrets('KAKAO_REST_API_KEY'),
+            "secret": get_secrets('KAKAO_CLIENT_SECRET')
+        }
+    },
+
     "apple": {
         "APP": {
             # Your service identifier.
