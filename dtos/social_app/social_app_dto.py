@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 
-from dtos import BaseOutputDTO, BaseInputDTO
+from dtos.base import BaseOutputDTO, BaseInputDTO
 
 
 @dataclass
