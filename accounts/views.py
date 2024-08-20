@@ -61,10 +61,11 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
 
         # kakao에 user info 요청
         headers = {"Authorization": f"Bearer ${access_token}"}
-        user_infomation = requests.get(KAKAO_USER_API, headers=headers).json()  # 받은 access token 으로 user 정보 요청
+        user_information = requests.get(KAKAO_USER_API, headers=headers).json()  # 받은 access token 으로 user 정보 요청
 
-        kakao_account = user_infomation.get('kakao_account')
+        kakao_account = user_information.get('kakao_account')
         email = kakao_account.get('email')
+        nickname = kakao_account.get('profile').get('nickname')
 
         # 유저가 이미 디비에 있는지 확인
         try:
@@ -81,7 +82,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             timestamp = int(datetime.datetime.now().timestamp())
             password = str(random.randint(0, timestamp))
             user = User.objects.create_user(email, password)
-            profile = CommonProfile.objects.create(user=user, name=email)
+            profile = CommonProfile.objects.create(user=user, name=nickname)
 
             try:
                 user = User.objects.get(email=email)
