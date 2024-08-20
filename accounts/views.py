@@ -10,7 +10,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import SlidingToken
 
-from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI, LOGIN_REDIRECT_URL
+from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI, LOGIN_REDIRECT_URL, \
+    KAKAO_ADMIN_KEY
 from accounts.models import User, CommonProfile
 from accounts.serializers import UserSerializer, LogoutSerializer, KakaoCallbackSerializer
 from accounts.utils import token_serializer
@@ -29,8 +30,41 @@ class UserViewSet(viewsets.GenericViewSet):
         token.blacklist()
         return Response(dict(message='logout succeeded'))
 
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated], serializer_class=LogoutSerializer)
+    def resign(self, request: Request):
+        user = request.user
+
+        # todo: 일단 kakao만 구현했으므로
+        kakao_uid = user.socialaccount_set.filter(provider='kakao').first().uid
+
+        requests.post(
+            url="https://kapi.kakao.com/v1/user/unlink",
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"KakaoAK {KAKAO_ADMIN_KEY}",
+            },
+            data={
+                "target_id_type": "user_id",
+                "target_id": int(kakao_uid)
+            }
+        )
+        user.socialaccount_set.all().delete()
+
+
+        token_str = request.META.get('HTTP_AUTHORIZATION', '').split()[1]
+        token = SlidingToken(token_str)
+        token.blacklist()
+
+        return Response(dict(message='logout succeeded'))
+
 
 class KaKaoLoginViewSet(viewsets.GenericViewSet):
+
+    @action(detail=False, methods=['GET'])
+    def getcode(self, request: Request):
+        kakao_api = "https://kauth.kakao.com/oauth/authorize?response_type=code"
+
+        return redirect(f"{kakao_api}&client_id={KAKAO_REST_API_KEY}&redirect_uri={KAKAO_CALLBACK_URI}")
 
     @action(detail=False, methods=['GET'], serializer_class=KakaoCallbackSerializer)
     def callback(self, request: Request):
@@ -55,10 +89,11 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
 
         # kakao에 user info 요청
         headers = {"Authorization": f"Bearer ${access_token}"}
-        user_infomation = requests.get(KAKAO_USER_API, headers=headers).json()  # 받은 access token 으로 user 정보 요청
+        user_information = requests.get(KAKAO_USER_API, headers=headers).json()  # 받은 access token 으로 user 정보 요청
 
-        kakao_account = user_infomation.get('kakao_account')
+        kakao_account = user_information.get('kakao_account')
         email = kakao_account.get('email')
+        nickname = kakao_account.get('profile').get('nickname')
 
         # 유저가 이미 디비에 있는지 확인
         try:
@@ -75,7 +110,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             timestamp = int(datetime.datetime.now().timestamp())
             password = str(random.randint(0, timestamp))
             user = User.objects.create_user(email, password)
-            profile = CommonProfile.objects.create(user=user, name=email)
+            profile = CommonProfile.objects.create(user=user, name=nickname)
 
             try:
                 user = User.objects.get(email=email)
