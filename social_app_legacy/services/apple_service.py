@@ -7,7 +7,7 @@ from allauth.socialaccount.providers.apple.views import AppleOAuth2Adapter
 
 from accounts.models import User
 from dtos import OauthStateInputDTO
-from social_app.services.base_service import BaseSocialLoginService
+from social_app_legacy.services.base_service import BaseSocialLoginService
 from WAKe_server.settings import SOCIALACCOUNT_PROVIDERS
 
 

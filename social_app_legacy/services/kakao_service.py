@@ -10,7 +10,7 @@ from WAKe_server.settings import KAKAO_ADMIN
 
 from accounts.models import User
 from dtos import OauthStateInputDTO
-from social_app.services.base_service import BaseSocialLoginService
+from social_app_legacy.services.base_service import BaseSocialLoginService
 
 
 class KakaoLoginService(BaseSocialLoginService):

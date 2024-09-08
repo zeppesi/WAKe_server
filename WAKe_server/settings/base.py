@@ -35,6 +35,8 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "django.contrib.sites",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -160,6 +162,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',  # 누구나 접근
     ),
+}
+
+#rest auth
+REST_AUTH = {
+    "TOKEN_MODEL": None,  # jwt token 쓸꺼임!, 이 경우 밑에 값이 무조건 True 거나 session 방식
+    "USE_JWT": True,  # jwt token based auth를 위해 True
+    "JWT_AUTH_HTTPONLY": False,  # refresh_token를 사용할 예정이라면, False로 설정을 바꿔야한다.
 }
 
 # 추가적인 JWT 설정
