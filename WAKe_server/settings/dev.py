@@ -5,7 +5,7 @@ DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': get_secrets('DATABASE_NAME'),
         'USER': get_secrets('DATABASE_USER'),
         'PASSWORD': get_secrets('DATABASE_PASSWORD'),
