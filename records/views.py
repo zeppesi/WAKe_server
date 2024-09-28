@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from records.models import Record, Content
 from records.serializer import RecordSerializer, ContentSerializer, RecordCreateSerializer, RecordListQuerySerializer, \
     RandomContentQuerySerializer, RecordListSerializer
-from users.models import Profile
+from accounts.models import CommonProfile
 from utils.time import KST
 
 
@@ -47,7 +47,7 @@ class RecordCreateAPIView(CreateAPIView):
         content_id = serializer.validated_data.get('content_id')
         text = serializer.validated_data.get('text')
 
-        profile = Profile.objects.get(name=username)
+        profile = CommonProfile.objects.get(name=username)
 
         record = Record.objects.create(
             content_id=content_id,
