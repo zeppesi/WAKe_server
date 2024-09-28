@@ -8,6 +8,7 @@ RUN    apt-get -y update
 RUN    apt-get -y install vim
 RUN    apt-get -y install python3.11-dev python3.11-venv python3-pip
 RUN    update-alternatives --install /usr/bin/python3 python /usr/bin/python3.11 1
+RUN    api-get -y install pkg-config
 RUN    apt-get -y install libmysqlclient-dev default-libmysqlclient-dev
 
 
