@@ -97,8 +97,24 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             access_token = token['access']
             refresh_token = token['refresh']
             res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
-            res.set_cookie('access', access_token)
-            res.set_cookie('refresh', refresh_token)
+            res.set_cookie(
+                'access',
+                access_token,
+                max_age=3600 * 24 * 3,
+                domain='.zps.kr',
+                secure=True,
+                httponly=True,
+                samesite=False,
+            )
+            res.set_cookie(
+                'refresh',
+                refresh_token,
+                max_age=3600 * 24 * 3,
+                domain='.zps.kr',
+                secure=True,
+                httponly=True,
+                samesite=False,
+            )
             return res
 
         except User.DoesNotExist:
@@ -121,8 +137,24 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
                 access_token = token['access']
                 refresh_token = token['refresh']
                 res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
-                res.set_cookie('access', access_token)
-                res.set_cookie('refresh', refresh_token)
+                res.set_cookie(
+                    'access',
+                    access_token,
+                    max_age=3600 * 24 * 3,
+                    domain='.zps.kr',
+                    secure=True,
+                    httponly=True,
+                    samesite=False,
+                )
+                res.set_cookie(
+                    'refresh',
+                    refresh_token,
+                    max_age=3600 * 24 * 3,
+                    domain='.zps.kr',
+                    secure=True,
+                    httponly=True,
+                    samesite=False,
+                )
                 return res
             except Exception as e:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
