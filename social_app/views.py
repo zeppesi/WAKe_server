@@ -14,7 +14,7 @@ from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework_simplejwt.tokens import SlidingToken
 
 from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI, LOGIN_REDIRECT_URL, \
-    KAKAO_ADMIN_KEY
+    KAKAO_ADMIN_KEY, BASE_URL
 from allauth.socialaccount.providers.kakao import views as kakao_view
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from accounts.models import User, CommonProfile
@@ -23,7 +23,6 @@ from accounts.utils import token_serializer
 
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
 KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
-BASE_URL = "http://127.0.0.1:8000/api/"
 
 
 class KaKaoLoginViewSet(viewsets.GenericViewSet):
@@ -97,8 +96,9 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             token = token_serializer(user)
             access_token = token['access']
             refresh_token = token['refresh']
-
             res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
+            res.set_cookie('access', access_token)
+            res.set_cookie('refresh', refresh_token)
             return res
 
         except User.DoesNotExist:
@@ -121,7 +121,8 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
                 access_token = token['access']
                 refresh_token = token['refresh']
                 res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
-                res.set_cookie('access', access_token, 'refresh', refresh_token)
+                res.set_cookie('access', access_token)
+                res.set_cookie('refresh', refresh_token)
                 return res
             except Exception as e:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
