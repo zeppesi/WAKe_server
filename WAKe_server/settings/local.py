@@ -28,9 +28,6 @@ LOGIN_REDIRECT_URL = get_secrets('LOGIN_REDIRECT_URL')
 KAKAO_ADMIN_KEY = get_secrets('KAKAO_ADMIN_KEY')
 BASE_URL = get_secrets('BASE_URL')
 
-ALLOWED_ORIGINS = ['https://a2c8-114-202-117-12.ngrok-free.app']
-CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS.copy()
-
 SOCIALACCOUNT_PROVIDERS = {
     "kakao": {
         "APP": {
