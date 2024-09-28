@@ -9,9 +9,9 @@ RUN    apt-get -y install vim
 RUN    apt-get -y install python3.11-dev python3.11-venv python3-pip
 RUN    update-alternatives --install /usr/bin/python3 python /usr/bin/python3.11 1
 
-RUN apt-get install libmysqlclient-dev -y
-
-RUN apt-get install -y mysql-client-core-5.6
+RUN apt-get update \
+    && apt-get install -y gcc default-libmysqlclient-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
 
 RUN useradd -b /home -m -s /bin/bash django
