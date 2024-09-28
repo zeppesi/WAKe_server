@@ -1,171 +1,137 @@
-import json
+import datetime
+import random
 
+import requests
 from allauth.socialaccount.providers.kakao.views import KakaoOAuth2Adapter
-from allauth.socialaccount.providers.apple.views import AppleOAuth2Adapter
-
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import redirect
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
+from dj_rest_auth.registration.views import SocialLoginView
+from rest_framework_simplejwt.tokens import SlidingToken
 
-from accounts.models import User
-from core.utils.time import TimeManager
-from dtos import OauthStateInputDTO, DTOResponseFormatter
-from social_app.serializers.base_serializer import SocialLoginSerializer
-from social_app.services.apple_service import AppleLoginService
-from social_app.services.kakao_service import KakaoLoginService
+from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_CALLBACK_URI, LOGIN_REDIRECT_URL, \
+    KAKAO_ADMIN_KEY
+from allauth.socialaccount.providers.kakao import views as kakao_view
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from accounts.models import User, CommonProfile
+from accounts.serializers import UserSerializer, LogoutSerializer, KakaoCallbackSerializer
+from accounts.utils import token_serializer
+
+KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
+KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
+BASE_URL = "http://127.0.0.1:8000/api/"
 
 
-class LoginViewSet(viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    adapter_class = None
-
-    def get_serializer_context(self):
-        context = super(LoginViewSet, self).get_serializer_context()
-        context['nested'] = self.request.META.get('HTTP_NESTED', 'true')
-        return context
-
-    @action(detail=False, methods=['POST'])
-    def login(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
-        new_user: bool = data['new_user']
-        user: User = data['user']
-        response_status = status.HTTP_200_OK
-        if new_user or not hasattr(user, 'common_profile'):
-            user = serializer.create(serializer.validated_data)
-            response_status = status.HTTP_201_CREATED
-
-        if not user.is_active:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        user.last_login = TimeManager.now()
-        user.save()
-
-        token, new_user = self.token_model.objects.get_or_create(user=user)
-
-        if request.data.get('state'):
-            redirect_url = request.data.get('state')
-            if '?' in redirect_url:
-                redirect_url += f'&token={token.key}&new_user={new_user}'
-            else:
-                redirect_url += f'?token={token.key}&new_user={new_user}'
-            return redirect(redirect_url)
-
-        return Response(dict(key=token.key, new_user=new_user), status=response_status)
+class KaKaoLoginViewSet(viewsets.GenericViewSet):
+    adapter_class = kakao_view.KakaoOAuth2Adapter
+    client_class = OAuth2Client
 
     @action(detail=False, methods=['GET'])
-    def callback(self, request):
-        return Response(status=status.HTTP_200_OK)
+    def getcode(self, request: Request):
+        kakao_api = "https://kauth.kakao.com/oauth/authorize?response_type=code"
+        return redirect(f"{kakao_api}&client_id={KAKAO_REST_API_KEY}&redirect_uri={KAKAO_CALLBACK_URI}")
 
-
-class KaKaoLoginViewSet(LoginViewSet):
-    adapter_class = KakaoOAuth2Adapter
-    permission_classes = [AllowAny]
-
-    @action(detail=False, methods=['POST'], serializer_class=SocialLoginSerializer)
-    def login(self, request):
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated], serializer_class=LogoutSerializer)
+    def resign(self, request: Request):
         user = request.user
-        service = KakaoLoginService(
-            request=request,
-            user=user,
-            access_token=request.data.get('access_token'),
-            refresh_token=request.data.get('refresh_token'),
+
+        # todo: 일단 kakao만 구현했으므로
+        kakao_uid = user.socialaccount_set.filter(provider='kakao').first().uid
+        # kakao_uid = 3664195039
+        requests.post(
+            url="https://kapi.kakao.com/v1/user/unlink",
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"KakaoAK {KAKAO_ADMIN_KEY}",
+            },
+            data={
+                "target_id_type": "user_id",
+                "target_id": int(kakao_uid)
+            }
         )
+        user.socialaccount_set.all().delete()
+
+        token_str = request.META.get('HTTP_AUTHORIZATION', '').split()[1]
+        token = SlidingToken(token_str)
+        token.blacklist()
+
+        return Response(dict(message='logout succeeded'))
+
+    @action(detail=False, methods=['GET'], serializer_class=KakaoCallbackSerializer)
+    def callback(self, request: Request):
+        code = request.GET["code"]
+
+        if not code:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # kakao에 access token 발급 요청
+        data = {
+            "grant_type": "authorization_code",
+            "client_id": KAKAO_REST_API_KEY,
+            "redirect_uri": KAKAO_CALLBACK_URI,
+            "code": code,
+            "client_secret": KAKAO_CLIENT_SECRET
+        }
+        headers = {"Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
+        token = requests.post(KAKAO_TOKEN_API, data=data, headers=headers).json()  # 받은 코드로 구글에 access token 요청하기
+        access_token = token['access_token']  # 받은 access token
+        if not access_token:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # kakao에 user info 요청
+        headers = {"Authorization": f"Bearer ${access_token}"}
+        user_information = requests.get(KAKAO_USER_API, headers=headers).json()  # 받은 access token 으로 user 정보 요청
+
+        kakao_account = user_information.get('kakao_account')
+        email = kakao_account.get('email')
+        nickname = kakao_account.get('profile').get('nickname')
+
+        # 유저가 이미 디비에 있는지 확인
         try:
-            service.handle_login()
-        except service.DuplicatedEmailError as e:
-            return Response(DTOResponseFormatter.run(errors=e.message), status=status.HTTP_400_BAD_REQUEST)
-        output_dto = service.token_serializer()
-        return Response(DTOResponseFormatter.run(output_dto))
+            # a. 있으면 토큰 발행
+            user = User.objects.get(email=email)
+            token = token_serializer(user)
+            access_token = token['access']
+            refresh_token = token['refresh']
 
-    @action(detail=False, methods=['GET'])
-    def callback(self, request):
-        state = request.query_params.get('state')
-        authorization_code = request.query_params.get('code')
+            res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
+            return res
 
-        state = json.loads(state)
-        state_input_dto = OauthStateInputDTO(**state)
+        except User.DoesNotExist:
+            # b. 없으면 유저 및 프로필 생성
+            data = {"access_token": access_token, "code": code}
+            accept = requests.post(f"{BASE_URL}social/kakao/login/", data=data)
+            accept_status = accept.status_code
+            if accept_status != 200:
+                return JsonResponse({"err_msg": "failed to signin"}, status=accept_status)
 
-        service = KakaoLoginService(request=request, state=state_input_dto, authorization_code=authorization_code)
+            timestamp = int(datetime.datetime.now().timestamp())
+            password = str(random.randint(0, timestamp))
 
-        try:
-            service.handle_callback()
-        except service.SocialLoginError as e:
-            print(e)
-            redirect_url = service.redirect_url_with_error(state_input_dto.redirect)
-            return redirect(
-                redirect_url,
-                e.message,
-            )
-        except service.DuplicatedEmailError as e:
-            redirect_url = service.redirect_url_with_error(
-                state_input_dto.redirect,
-                e.message
-            )
-            return redirect(redirect_url)
-        except Exception as e:
-            print(e)
-            redirect_url = service.redirect_url_with_error(
-                state_input_dto.redirect
-            )
-            return redirect(redirect_url)
-        redirect_url = service.redirect_url_with_token(state_input_dto.redirect)
-        return redirect(redirect_url)
+            user = User.objects.get(email=email)
+            profile = CommonProfile.objects.create(user=user, name=nickname)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
-    def check_relation(self, request):
-        service = KakaoLoginService(request=request, )
-        output_dto = service.check_channel_relation()
-        return Response(DTOResponseFormatter.run(output_dto))
+            try:
+                user = User.objects.get(email=email)
+                token = token_serializer(user)
+                access_token = token['access']
+                refresh_token = token['refresh']
+                res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
+                res.set_cookie('access', access_token, 'refresh', refresh_token)
+                return res
+            except Exception as e:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class AppleLoginViewSet(LoginViewSet):
-    adapter_class = AppleOAuth2Adapter
-    permission_classes = [AllowAny]
+class KaKaoLogin(SocialLoginView):
+    adapter_class = KakaoOAuth2Adapter
+    callback_url = "http://127.0.0.1:8000/api/social/kakao/callback/"
+    client_class = OAuth2Client
 
-    @action(detail=False, methods=['POST'], serializer_class=SocialLoginSerializer)
-    def login(self, request):
-        user = request.user
-        authorization_code = request.data.get('code')
-        service = AppleLoginService(request=request, authorization_code=authorization_code, user=user)
-        try:
-            service.handle_callback()
-            output_dto = service.token_serializer()
-        except service.DuplicatedEmailError as e:
-            return Response(DTOResponseFormatter.run(errors=e.message), status=status.HTTP_400_BAD_REQUEST)
-        return Response(DTOResponseFormatter.run(output_dto))
-
-    @action(detail=False, methods=['POST'], serializer_class=SocialLoginSerializer)
-    def callback(self, request):
-        state = request.data.get('state') or request.query_params.get('state')
-        if state is None:
-            return redirect('https://www.wake.zps.kr/')
-        state = '{' + state + '}'
-        state = json.loads(state)
-        state_input_dto = OauthStateInputDTO(**state)
-
-        authorization_code = request.data.get('code') or request.query_params.get('code')
-
-        service = AppleLoginService(request=request, state=state_input_dto, authorization_code=authorization_code)
-        try:
-            service.handle_callback()
-        except service.SocialLoginError as e:
-            print(e)
-            redirect_url = service.redirect_url_with_error(state_input_dto.redirect)
-            return redirect(redirect_url)
-        except service.DuplicatedEmailError as e:
-            redirect_url = service.redirect_url_with_error(
-                state_input_dto.redirect,
-                e.message
-            )
-            return redirect(redirect_url)
-        except Exception as e:
-            print(e)
-            redirect_url = service.redirect_url_with_error(state_input_dto.redirect)
-            return redirect(redirect_url)
-
-        redirect_url = service.redirect_url_with_token(state_input_dto.redirect)
-        return redirect(redirect_url)
+    def post(self, request, *args, **kwargs):
+        print(request.POST)
+        return super().post(request, *args, **kwargs)
