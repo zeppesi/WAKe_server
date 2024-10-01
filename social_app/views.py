@@ -26,6 +26,7 @@ KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
 
 
 class KaKaoLoginViewSet(viewsets.GenericViewSet):
+    serializer_class = KakaoCallbackSerializer
     adapter_class = kakao_view.KakaoOAuth2Adapter
     client_class = OAuth2Client
 
