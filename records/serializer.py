@@ -25,7 +25,12 @@ class RecordListSerializer(serializers.Serializer):
     records = RecordSerializer(many=True)
 
 
-class RecordCreateSerializer(serializers.Serializer):
+class CreateRecordSerializer(serializers.Serializer):
+    content_id = serializers.IntegerField()
+    text = serializers.CharField(max_length=100, allow_blank=True, allow_null=True)
+
+
+class RecordCreateSerializer(serializers.Serializer):  # todo: deprecated
     content_id = serializers.IntegerField()
     username = serializers.CharField(max_length=20)
     text = serializers.CharField(max_length=100, allow_blank=True, allow_null=True)
