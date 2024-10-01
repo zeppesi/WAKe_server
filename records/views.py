@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.db.models.functions import TruncDate
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import ListAPIView, GenericAPIView, CreateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -16,6 +17,7 @@ from utils.time import KST
 
 class RandomContentAPIView(GenericAPIView):
     serializer_class = ContentSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_prev_filter(self) -> Q:
         prev = self.request.query_params.get('prev')
@@ -38,6 +40,7 @@ class RandomContentAPIView(GenericAPIView):
 
 class RecordCreateAPIView(CreateAPIView):
     serializer_class = RecordCreateSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, *args, **kwargs):
         serializer: RecordCreateSerializer = self.get_serializer(data=request.data)
@@ -62,6 +65,7 @@ class RecordCreateAPIView(CreateAPIView):
 
 class RecordListAPIView(ListAPIView):
     serializer_class = RecordListSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_target_dates(self) -> (datetime.date, datetime.date):
         q_target_date = self.request.query_params.get('target_date')
@@ -72,18 +76,11 @@ class RecordListAPIView(ListAPIView):
         target_date_st = target_date_end - datetime.timedelta(days=6)
         return target_date_st, target_date_end
 
-    def get_username_filter(self) -> Q:
-        username = self.request.query_params.get('username')
-        if not username:
-            return Q()
-        return Q(profile__name=username)
-
     def get_queryset(self):
         target_date_st, target_date_end = self.get_target_dates()
-        username_filter = self.get_username_filter()
 
         queryset = Record.objects.filter(
-            username_filter,
+            profile__user=self.request.user
         ).annotate(
             record_date=TruncDate('created_at', tzinfo=KST)
         ).filter(
