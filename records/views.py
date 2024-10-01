@@ -2,7 +2,10 @@ import datetime
 
 from django.db.models import Q
 from django.db.models.functions import TruncDate
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, GenericAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -15,7 +18,7 @@ from accounts.models import CommonProfile
 from utils.time import KST
 
 
-class RandomContentAPIView(GenericAPIView):
+class ContentViewSet(viewsets.GenericViewSet):
     serializer_class = ContentSerializer
     permission_classes = [IsAuthenticated]
 
@@ -25,8 +28,12 @@ class RandomContentAPIView(GenericAPIView):
             return Q()
         return ~Q(id=int(prev))
 
-    @swagger_auto_schema(query_serializer=RandomContentQuerySerializer)
-    def get(self, request: Request):
+    @swagger_auto_schema(
+        operation_summary="랜덤 질문 조회 API",
+        query_serializer=RandomContentQuerySerializer
+    )
+    @action(methods=['GET'], detail=False)
+    def random(self, request, *args, **kwargs):
         prev_filter = self.get_prev_filter()
         queryset = Content.objects.filter(
             prev_filter
@@ -36,6 +43,7 @@ class RandomContentAPIView(GenericAPIView):
 
         serializer = self.get_serializer(queryset)
         return Response(serializer.data)
+
 
 
 class RecordCreateAPIView(CreateAPIView):
