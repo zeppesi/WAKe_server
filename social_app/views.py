@@ -125,6 +125,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             password = str(random.randint(0, timestamp))
 
             user = User.objects.get(email=email)
+            user.set_password(password)
             profile = CommonProfile.objects.create(user=user, name=nickname)
 
             try:
