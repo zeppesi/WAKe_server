@@ -31,7 +31,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
     client_class = OAuth2Client
 
     @action(detail=False, methods=['GET'])
-    def getcode(self, request: Request):
+    def login(self, request: Request):
         kakao_api = "https://kauth.kakao.com/oauth/authorize?response_type=code"
         return redirect(f"{kakao_api}&client_id={KAKAO_REST_API_KEY}&redirect_uri={KAKAO_CALLBACK_URI}")
 
