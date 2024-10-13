@@ -34,9 +34,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
     def resign(self, request: Request):
         user = request.user
 
-        # todo: 일단 kakao만 구현했으므로
         kakao_uid = user.socialaccount_set.filter(provider='kakao').first().uid
-        # kakao_uid = 3664195039
         requests.post(
             url="https://kapi.kakao.com/v1/user/unlink",
             headers={
