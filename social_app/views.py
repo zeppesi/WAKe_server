@@ -18,7 +18,7 @@ from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_
 from allauth.socialaccount.providers.kakao import views as kakao_view
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from accounts.models import User, CommonProfile
-from accounts.serializers import UserSerializer, LogoutSerializer, KakaoCallbackSerializer
+from accounts.serializers import LogoutSerializer, KakaoCallbackSerializer
 from accounts.utils import token_serializer
 
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
@@ -91,26 +91,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
             user = User.objects.get(email=email)
             token = token_serializer(user)
             access_token = token['access']
-            refresh_token = token['refresh']
-            res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
-            res.set_cookie(
-                'access',
-                access_token,
-                max_age=3600 * 24 * 3,
-                domain='.zps.kr',
-                secure=True,
-                httponly=True,
-                samesite=False,
-            )
-            res.set_cookie(
-                'refresh',
-                refresh_token,
-                max_age=3600 * 24 * 3,
-                domain='.zps.kr',
-                secure=True,
-                httponly=True,
-                samesite=False,
-            )
+            res = redirect(LOGIN_REDIRECT_URL+f'?t={access_token}')
             return res
 
         except User.DoesNotExist:
@@ -132,26 +113,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
                 user = User.objects.get(email=email)
                 token = token_serializer(user)
                 access_token = token['access']
-                refresh_token = token['refresh']
-                res = redirect(LOGIN_REDIRECT_URL+f'?access={access_token}&refresh={refresh_token}')
-                res.set_cookie(
-                    'access',
-                    access_token,
-                    max_age=3600 * 24 * 3,
-                    domain='.zps.kr',
-                    secure=True,
-                    httponly=True,
-                    samesite=False,
-                )
-                res.set_cookie(
-                    'refresh',
-                    refresh_token,
-                    max_age=3600 * 24 * 3,
-                    domain='.zps.kr',
-                    secure=True,
-                    httponly=True,
-                    samesite=False,
-                )
+                res = redirect(LOGIN_REDIRECT_URL + f'?t={access_token}')
                 return res
             except Exception as e:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -163,5 +125,5 @@ class KaKaoLogin(SocialLoginView):
     client_class = OAuth2Client
 
     def post(self, request, *args, **kwargs):
-        print(request.POST)
-        return super().post(request, *args, **kwargs)
+        res = super().post(request, *args, **kwargs)
+        return res
