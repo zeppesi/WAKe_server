@@ -30,11 +30,6 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
     adapter_class = kakao_view.KakaoOAuth2Adapter
     client_class = OAuth2Client
 
-    @action(detail=False, methods=['GET'])
-    def login(self, request: Request):
-        kakao_api = "https://kauth.kakao.com/oauth/authorize?response_type=code"
-        return redirect(f"{kakao_api}&client_id={KAKAO_REST_API_KEY}&redirect_uri={KAKAO_CALLBACK_URI}")
-
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated], serializer_class=LogoutSerializer)
     def resign(self, request: Request):
         user = request.user
@@ -159,3 +154,13 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
                 return res
             except Exception as e:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class KaKaoLogin(SocialLoginView):
+    adapter_class = KakaoOAuth2Adapter
+    callback_url = KAKAO_CALLBACK_URI
+    client_class = OAuth2Client
+
+    def post(self, request, *args, **kwargs):
+        print(request.POST)
+        return super().post(request, *args, **kwargs)

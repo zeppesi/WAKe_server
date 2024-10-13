@@ -1,19 +1,13 @@
-from allauth.socialaccount.providers.kakao.views import KakaoOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from dj_rest_auth.registration.views import SocialLoginView
-from requests import Request
+from django.shortcuts import redirect
+from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import SlidingToken
 
-from accounts.serializers import LogoutSerializer
+from WAKe_server.settings import KAKAO_REST_API_KEY, KAKAO_CALLBACK_URI
 
 
-class KaKaoLoginView(SocialLoginView):
-    adapter_class = KakaoOAuth2Adapter
-    callback_url = "http://127.0.0.1:8000/api/social/kakao/login/callback/"
-    client_class = OAuth2Client
+class LoginViewSet(viewsets.GenericViewSet):
 
-    def post(self, request, *args, **kwargs):
-        print(request.POST)
-        return super().post(request, *args, **kwargs)
+    @action(detail=False, methods=['GET'])
+    def kakao(self, request, *args, **kwargs):
+        kakao_api = "https://kauth.kakao.com/oauth/authorize?response_type=code"
+        return redirect(f"{kakao_api}&client_id={KAKAO_REST_API_KEY}&redirect_uri={KAKAO_CALLBACK_URI}")
