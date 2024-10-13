@@ -163,7 +163,7 @@ class KaKaoLoginViewSet(viewsets.GenericViewSet):
 
 class KaKaoLogin(SocialLoginView):
     adapter_class = KakaoOAuth2Adapter
-    callback_url = "http://127.0.0.1:8000/api/social/kakao/callback/"
+    callback_url = KAKAO_CALLBACK_URI
     client_class = OAuth2Client
 
     def post(self, request, *args, **kwargs):
