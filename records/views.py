@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, GenericAPIView, CreateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -21,7 +21,9 @@ from utils.time import KST
 class ContentViewSet(viewsets.GenericViewSet):
     model = Record
     serializer_class = ContentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+    # todo: Authenticated
+    #permission_classes = [IsAuthenticated]
 
     def get_prev_filter(self) -> Q:
         prev = self.request.query_params.get('prev')
