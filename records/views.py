@@ -55,7 +55,7 @@ class RecordViewSet(
     mixins.CreateModelMixin):
     model = Record
     serializer_class = RecordListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_target_dates(self) -> (datetime.date, datetime.date):
         q_target_date = self.request.query_params.get('target_date')
